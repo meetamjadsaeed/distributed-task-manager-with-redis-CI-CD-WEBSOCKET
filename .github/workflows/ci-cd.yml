@@ -1,0 +1,69 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: yourusername
+          POSTGRES_PASSWORD: yourpassword
+          POSTGRES_DB: task_manager
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests
+        env:
+          POSTGRES_USER: yourusername
+          POSTGRES_PASSWORD: yourpassword
+          POSTGRES_DB: task_manager
+          POSTGRES_HOST: localhost
+        run: go test ./...
+
+      - name: Build application
+        run: go build -o main ./cmd/server
+
+      - name: Docker build and push
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker build -t yourusername/task-manager:latest .
+          docker push yourusername/task-manager:latest
+
+      - name: Deploy to Google Cloud
+        env:
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+          GCP_KEY_FILE: ${{ secrets.GCP_KEY_FILE }}
+        run: |
+          echo $GCP_KEY_FILE | base64 --decode > $HOME/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
+          gcloud config set project $GCP_PROJECT
+          gcloud builds submit --tag gcr.io/$GCP_PROJECT/task-manager
+          gcloud run deploy task-manager --image gcr.io/$GCP_PROJECT/task-manager --platform managed --region us-central1 --allow-unauthenticated
