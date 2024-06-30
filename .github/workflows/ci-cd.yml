@@ -14,7 +14,7 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: yourusername
+          POSTGRES_USER: meetamjadsaeed
           POSTGRES_PASSWORD: yourpassword
           POSTGRES_DB: task_manager
         ports:
@@ -39,7 +39,7 @@ jobs:
 
       - name: Run tests
         env:
-          POSTGRES_USER: yourusername
+          POSTGRES_USER: meetamjadsaeed
           POSTGRES_PASSWORD: yourpassword
           POSTGRES_DB: task_manager
           POSTGRES_HOST: localhost
@@ -54,8 +54,8 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker build -t yourusername/task-manager:latest .
-          docker push yourusername/task-manager:latest
+          docker build -t meetamjadsaeed/task-manager:latest .
+          docker push meetamjadsaeed/task-manager:latest
 
       - name: Deploy to Google Cloud
         env:

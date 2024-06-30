@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/yourusername/task-manager/internal/models"
+	"github.com/meetamjadsaeed/task-manager/internal/models"
 )
 
 func GenerateReport() (interface{}, error) {
