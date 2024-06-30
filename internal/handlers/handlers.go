@@ -150,7 +150,8 @@ func GenerateReport(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, report)
+
+	c.JSON(http.StatusOK, gin.H{"report": report})
 }
 
 // Upgrade connection to a WebSocket
